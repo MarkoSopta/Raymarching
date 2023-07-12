@@ -19,6 +19,7 @@ Shader "Marko/RaymarchingShader"
             #include "UnityCG.cginc"
 
             sampler2D _MainTex;
+            uniform sampler2D _CameraDepthTexture;
             uniform float4x4 _CamFrustum, _CamToWorld;
             uniform float _maxDistance;
             uniform float4 _sphere1;
@@ -79,7 +80,7 @@ Shader "Marko/RaymarchingShader"
             }
 
 
-            fixed4 Raymarching(float3 ro,float3 rd) {
+            fixed4 Raymarching(float3 rayOrigin,float3 rayDistance,float depth) {
 
                 fixed4 result = fixed4(1, 1, 1, 1);
                 const int maxIter = 128;
@@ -87,19 +88,19 @@ Shader "Marko/RaymarchingShader"
 
                 for (int i  = 0; i < maxIter; i++)   
                 {
-                    if (t > _maxDistance) 
+                    if (t > _maxDistance || t>= depth) 
                     {                    
-                        result = fixed4(rd, 1);
+                        result = fixed4(rayDistance, 0);
                         break;
                     }
-                    float3 p = ro + rd * t;
+                    float3 p = rayOrigin + rayDistance * t;
 
                     float d = distanceField(p);
                     if (d < 0.01) //hit
                     { 
                         float3 n = getNormal(p);
                         float light = dot(-_lightDirection, n);
-                        result = fixed4(1,1,1, 1)* light;
+                        result = fixed4(fixed3(1, 1, 1) * light, 1);
                         break;
                     }
                     t += d;
@@ -110,10 +111,15 @@ Shader "Marko/RaymarchingShader"
 
             fixed4 frag(v2f i) : SV_Target
             {
+                float depth = LinearEyeDepth(tex2D(_CameraDepthTexture, i.uv).r);
+                depth *= length(i.ray);
+
+
+                fixed3 col = tex2D(_MainTex,i.uv);
                float3 rayDirection = normalize(i.ray.xyz);
                float3 rayOrigin = _WorldSpaceCameraPos;
-               fixed4 result = Raymarching(rayOrigin, rayDirection);
-               return result;
+               fixed4 result = Raymarching(rayOrigin, rayDirection,depth);
+               return fixed4(col * (1.0 - result.w) + result.xyz * result.w, 1.0);
             }
             ENDCG
         }
