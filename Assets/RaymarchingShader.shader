@@ -16,15 +16,17 @@ Shader "Marko/RaymarchingShader"
             #pragma fragment frag
             #pragma target 3.0
 
-            #include "UnityCG.cginc"
+                #include "UnityCG.cginc"
+                #include "DistanceFunctions.cginc"
+
 
             sampler2D _MainTex;
             uniform sampler2D _CameraDepthTexture;
             uniform float4x4 _CamFrustum, _CamToWorld;
             uniform float _maxDistance;
-            uniform float4 _sphere1;
-            uniform float3 _lightDirection;
-
+            uniform float4 _sphere1, _box1;           
+            uniform float3 _lightDirection, _modInterval;
+            uniform fixed4 _mainColor;
             struct appdata
             {
                 float4 vertex : POSITION;
@@ -53,21 +55,29 @@ Shader "Marko/RaymarchingShader"
                 return o;
             }
 
-            float sdSphere(float3 p, float s) {
+                        
 
-                return length(p) - s;
+
+
+            float distanceField(float3 p) 
+            {
+                float modX = pMod1(p.x, _modInterval.x);
+                float modY = pMod1(p.y, _modInterval.y);
+                float modZ = pMod1(p.z, _modInterval.z);
+
+                float Sphere1 = sdSphere(p - _sphere1.xyz, _sphere1.w);
+                float Box1 = sdBox(p - _box1.xyz, _box1.w);
+
+                return opS(Sphere1, Box1 );
+
+
             }
 
             
 
 
 
-            float distanceField(float3 p) 
-            {
-                float Sphere1 = sdSphere(p - _sphere1.xyz, _sphere1.w);
 
-                return Sphere1;
-            }
 
             float3 getNormal(float3 p)
             {
@@ -100,7 +110,7 @@ Shader "Marko/RaymarchingShader"
                     { 
                         float3 n = getNormal(p);
                         float light = dot(-_lightDirection, n);
-                        result = fixed4(fixed3(1, 1, 1) * light, 1);
+                        result = fixed4(_mainColor.rgb * light, 1);
                         break;
                     }
                     t += d;
