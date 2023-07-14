@@ -31,15 +31,27 @@ public class RaymarchCamera : SceneViewFilter
         }
     }
     private Camera _cam;
-
-    public Transform _directionalLight;
-
-
     public float _maxDistance;
+
+    [Header("Light")]
+    public Transform _directionalLight;
+    public Color _lightColor;
+    public float _lightIntensity;
+
+    [Header("Shadow")]
+    public float _shadowIntensity;
+    public Vector2 _shadowDistance;
+    [Range(1, 256)]
+    public float _penumbra;
+[Header("Signed Distance Field")]    
     public Color _mainColor;
     public Vector4 _sphere1;
     public Vector4 _box1;
-    public Vector3 _modInterval;
+    public float _roundingFactor;
+    public float _smoothingFactor;
+    public Vector4 _sphere2;
+    public float _intersectionSmoothing;
+
 
     void OnRenderImage(RenderTexture source, RenderTexture destination) {
         if (!_raymarchMaterial) {
@@ -49,9 +61,22 @@ public class RaymarchCamera : SceneViewFilter
         _raymarchMat.SetMatrix("_CamFrustum", CamFrustum(_camera));
         _raymarchMaterial.SetMatrix("_CamToWorld", _camera.cameraToWorldMatrix);
         _raymarchMaterial.SetFloat("_maxDistance", _maxDistance);
-        _raymarchMaterial.SetVector("_modInterval", _modInterval);
-        _raymarchMaterial.SetVector("_sphere1", _sphere1);
+        
+        _raymarchMaterial.SetVector("_sphere1", _sphere1);        
+        _raymarchMaterial.SetVector("_sphere2", _sphere2);
         _raymarchMaterial.SetVector("_box1", _box1);
+
+        _raymarchMaterial.SetFloat("_roundingFactor", _roundingFactor);
+        _raymarchMaterial.SetFloat("_smoothingFactor", _smoothingFactor);
+        _raymarchMaterial.SetFloat("_intersectionSmoothing", _intersectionSmoothing);
+
+        _raymarchMaterial.SetColor("_lightColor", _lightColor);
+        _raymarchMaterial.SetFloat("_lightIntensity", _lightIntensity);
+
+        _raymarchMaterial.SetVector("_shadowDistance", _shadowDistance);
+        _raymarchMaterial.SetFloat("_shadowIntensity", _shadowIntensity);
+        _raymarchMaterial.SetFloat("_penumbra", _penumbra);
+
         _raymarchMaterial.SetVector("_lightDirection", _directionalLight ? _directionalLight.forward : Vector3.down);
         _raymarchMaterial.SetColor("_mainColor", _mainColor);
         RenderTexture.active = destination;

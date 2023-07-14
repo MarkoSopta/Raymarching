@@ -23,10 +23,13 @@ Shader "Marko/RaymarchingShader"
             sampler2D _MainTex;
             uniform sampler2D _CameraDepthTexture;
             uniform float4x4 _CamFrustum, _CamToWorld;
-            uniform float _maxDistance;
-            uniform float4 _sphere1, _box1;           
-            uniform float3 _lightDirection, _modInterval;
-            uniform fixed4 _mainColor;
+            uniform float _maxDistance, _roundingFactor, _smoothingFactor, _intersectionSmoothing, _lightIntensity;
+            uniform float4 _sphere1, _sphere2, _box1;
+            uniform float3 _lightDirection, _modInterval , _lightColor;
+            uniform fixed4 _mainColor;            
+            uniform float2 _shadowDistance;
+            uniform float _shadowIntensity , _penumbra;
+
             struct appdata
             {
                 float4 vertex : POSITION;
@@ -55,21 +58,27 @@ Shader "Marko/RaymarchingShader"
                 return o;
             }
 
-                        
 
-
-
-            float distanceField(float3 p) 
-            {
-                float modX = pMod1(p.x, _modInterval.x);
-                float modY = pMod1(p.y, _modInterval.y);
-                float modZ = pMod1(p.z, _modInterval.z);
+            float BoxSphere(float3 p) {
 
                 float Sphere1 = sdSphere(p - _sphere1.xyz, _sphere1.w);
-                float Box1 = sdBox(p - _box1.xyz, _box1.w);
+                float Box1 = sdRoundedbox(p - _box1.xyz, _box1.w, _roundingFactor);
 
-                return opS(Sphere1, Box1 );
+                float combination1 = opSS(Sphere1, Box1, _smoothingFactor);
+                float Sphere2 = sdSphere(p - _sphere2.xyz, _sphere2.w);
+                float combination2 = opIS(Sphere2, combination1, _intersectionSmoothing);
 
+                return combination2;
+            }
+                float distanceField(float3 p) 
+            
+            {                
+                float groundPlane = sdPlane(p, float4(0, 1, 0,0));
+                float boxSphere = BoxSphere(p);
+
+                return opU(groundPlane, boxSphere);
+
+                
 
             }
 
@@ -88,6 +97,52 @@ Shader "Marko/RaymarchingShader"
                     distanceField(p + offset.yyx) - distanceField(p - offset.yyx));
                 return normalize(n);
             }
+
+            float hardShadows(float3 ro, float3 rd, float mint, float maxt)
+            {            
+                for (float t = mint; t < maxt; t++)
+                {
+                    float h = distanceField(ro + rd * t);
+                    if (h < 0.001) {
+                        return 0.0;
+                    }
+                    t += h;
+                }
+                return 1.0;
+            }
+
+
+
+            float softShadows(float3 ro, float3 rd, float mint, float maxt, float k)
+            {
+                float result = 1.0;
+                for (float x = mint; x < maxt;)
+                {
+                    float h = distanceField(ro + rd * x);
+                    if (h < 0.001) {
+                        return 0.0;
+                    }
+                    result = min(result, k * h / x);
+                    x += h;
+                }
+                return result;
+            }
+
+
+
+
+            float3 Shading(float3 position, float3 normal) {
+                //Directional light
+                float result = (_lightColor * dot(-_lightDirection, normal) * .5 + .5) * _lightIntensity;
+                //Shadows
+                float shadow = softShadows(position, -_lightDirection, _shadowDistance.x, _shadowDistance.y, _penumbra) * .5 + .5;
+                shadow = max(0.0, pow(shadow, _shadowIntensity));
+                result *= shadow;
+                return result;
+            }
+
+
+
 
 
             fixed4 Raymarching(float3 rayOrigin,float3 rayDistance,float depth) {
@@ -109,8 +164,8 @@ Shader "Marko/RaymarchingShader"
                     if (d < 0.01) //hit
                     { 
                         float3 n = getNormal(p);
-                        float light = dot(-_lightDirection, n);
-                        result = fixed4(_mainColor.rgb * light, 1);
+                        float shade = Shading(p, n);
+                        result = fixed4(_mainColor.rgb * shade, 1);
                         break;
                     }
                     t += d;
