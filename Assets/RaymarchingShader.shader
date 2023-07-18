@@ -23,6 +23,8 @@ Shader "Marko/RaymarchingShader"
             sampler2D _MainTex;
             uniform sampler2D _CameraDepthTexture;
             uniform float4x4 _CamFrustum, _CamToWorld;
+            uniform int _maxIterations;
+            uniform float _accuracy;
             uniform float _maxDistance, _roundingFactor, _smoothingFactor, _intersectionSmoothing, _lightIntensity;
             uniform float4 _sphere1, _sphere2, _box1;
             uniform float3 _lightDirection, _modInterval , _lightColor;
@@ -128,19 +130,46 @@ Shader "Marko/RaymarchingShader"
                 return result;
             }
 
+            uniform float _aoStepSize, _aoIntensity;;
+            uniform int _aoIterations;
+
+            float ambientOcclusion(float3 pos, float3 norm) {
+
+                float step = _aoStepSize;
+                float ao = 0.0;
+                float dst;
+
+                for (int i = 1; i <= _aoIterations; i++)
+                {
+                    dst = step * i;
+                    ao += max(0.0,(dst - distanceField(pos + norm + dst)) / dst);
+                }
+                return (1.0 - ao * _aoIntensity);
+            }
+
 
 
 
             float3 Shading(float3 position, float3 normal) {
+
+                float3 result; 
+                //Diffuse Color
+                float3 color = _mainColor.rgb;
                 //Directional light
-                float result = (_lightColor * dot(-_lightDirection, normal) * .5 + .5) * _lightIntensity;
+                float3 light = (_lightColor * dot(-_lightDirection, normal) * .5 + .5) * _lightIntensity;
                 //Shadows
                 float shadow = softShadows(position, -_lightDirection, _shadowDistance.x, _shadowDistance.y, _penumbra) * .5 + .5;
                 shadow = max(0.0, pow(shadow, _shadowIntensity));
-                result *= shadow;
+                //Ambioent Occlusion
+                float ao = ambientOcclusion(position, normal);
+
+
+                result = color * shadow * light * ao;
                 return result;
             }
 
+
+            //interesting effect when you set the shadow distance x to 0.001
 
 
 
@@ -148,7 +177,7 @@ Shader "Marko/RaymarchingShader"
             fixed4 Raymarching(float3 rayOrigin,float3 rayDistance,float depth) {
 
                 fixed4 result = fixed4(1, 1, 1, 1);
-                const int maxIter = 128;
+                const int maxIter = _maxIterations;
                 float t = 0; //distance travelled along the ray
 
                 for (int i  = 0; i < maxIter; i++)   
@@ -161,11 +190,11 @@ Shader "Marko/RaymarchingShader"
                     float3 p = rayOrigin + rayDistance * t;
 
                     float d = distanceField(p);
-                    if (d < 0.01) //hit
+                    if (d < _accuracy) //hit
                     { 
                         float3 n = getNormal(p);
-                        float shade = Shading(p, n);
-                        result = fixed4(_mainColor.rgb * shade, 1);
+                        float3 shade = Shading(p, n);
+                        result = fixed4(shade, 1);
                         break;
                     }
                     t += d;

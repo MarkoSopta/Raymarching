@@ -8,7 +8,7 @@ public class RaymarchCamera : SceneViewFilter
 {
     [SerializeField]
     private Shader _shader;
-    
+
     public Material _raymarchMaterial
     {
         get {
@@ -23,15 +23,25 @@ public class RaymarchCamera : SceneViewFilter
     private Material _raymarchMat;
 
     public Camera _camera {
-        get{
-            if (!_cam){
+        get {
+            if (!_cam) {
                 _cam = GetComponent<Camera>();
             }
             return _cam;
         }
     }
     private Camera _cam;
+    [Header("Setup")]
     public float _maxDistance;
+    [Range(1, 300)]
+    public int _maxIterations;
+    [Range(0.1f, 0.001f)]
+    public float _accuracy;
+
+    [Header("Ambient Occlusion")]
+    public int _aoIterations;
+    public float _aoStepSize, _aoIntensity;
+    
 
     [Header("Light")]
     public Transform _directionalLight;
@@ -61,7 +71,13 @@ public class RaymarchCamera : SceneViewFilter
         _raymarchMat.SetMatrix("_CamFrustum", CamFrustum(_camera));
         _raymarchMaterial.SetMatrix("_CamToWorld", _camera.cameraToWorldMatrix);
         _raymarchMaterial.SetFloat("_maxDistance", _maxDistance);
-        
+        _raymarchMaterial.SetFloat("_accuracy", _accuracy);
+        _raymarchMaterial.SetInt("_maxIterations", _maxIterations);
+
+        _raymarchMaterial.SetFloat("_aoIntensity", _aoIntensity);
+        _raymarchMaterial.SetFloat("_aoStepSize", _aoStepSize);
+        _raymarchMaterial.SetInt("_aoIterations", _aoIterations);
+
         _raymarchMaterial.SetVector("_sphere1", _sphere1);        
         _raymarchMaterial.SetVector("_sphere2", _sphere2);
         _raymarchMaterial.SetVector("_box1", _box1);

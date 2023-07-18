@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.4485985, g: 0.49488318, b: 0.55544627, a: 1}
+  m_IndirectSpecularColor: {r: 0.45142895, g: 0.50084305, b: 0.5719084, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -156,19 +156,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _shader: {fileID: 4800000, guid: 66521a0a1b887f841b91f427da47d96c, type: 3}
   _maxDistance: 100
+  _maxIterations: 300
+  _accuracy: 0.001
+  _aoIterations: 3
+  _aoStepSize: 0.2
+  _aoIntensity: 0.271
   _directionalLight: {fileID: 633789778}
-  _lightColor: {r: 1, g: 1, b: 1, a: 0}
+  _lightColor: {r: 1, g: 1, b: 0, a: 0}
   _lightIntensity: 1
-  _shadowIntensity: 1
-  _shadowDistance: {x: 1, y: 1000}
-  _penumbra: 256
-  _mainColor: {r: 0.6415094, g: 0.6415094, b: 0.6415094, a: 0}
-  _sphere1: {x: 0, y: 2.5, z: 0, w: 2.9}
-  _box1: {x: 0, y: 2.5, z: 0, w: 2.6}
-  _roundingFactor: 0.1
+  _shadowIntensity: 2
+  _shadowDistance: {x: 1, y: 100}
+  _penumbra: 200.1
+  _mainColor: {r: 0.050980393, g: 0.78039217, b: 1, a: 0}
+  _sphere1: {x: 0, y: 2.85, z: 0, w: 2.9}
+  _box1: {x: 0, y: 2.85, z: 0, w: 2.6}
+  _roundingFactor: 0.01
   _smoothingFactor: 1.337
-  _sphere2: {x: 0, y: 2.5, z: 0, w: 3.4}
-  _intersectionSmoothing: 0.05
+  _sphere2: {x: 0, y: 2.85, z: 0, w: 3.4}
+  _intersectionSmoothing: 0.1
 --- !u!81 &28095407
 AudioListener:
   m_ObjectHideFlags: 0
@@ -210,7 +215,7 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 1000
-  field of view: 90
+  field of view: 26.991467
   orthographic: 0
   orthographic size: 5
   m_Depth: 0
@@ -235,14 +240,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 28095405}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0.0025011543, y: -0.6781557, z: -0.0023079985, w: 0.73491037}
+  m_LocalPosition: {x: 12.31, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -0.39, y: -85.4, z: 0}
 --- !u!1 &633789776
 GameObject:
   m_ObjectHideFlags: 0
@@ -329,11 +334,11 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 633789776}
-  m_LocalRotation: {x: 0.3274777, y: -0.19566166, z: -0.49522996, w: 0.7805268}
+  m_LocalRotation: {x: -0.40586314, y: -0.43316245, z: -0.17016257, w: -0.78656864}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 161.493, y: 138.384, z: 108.125}
+  m_LocalEulerAnglesHint: {x: 29.41, y: 790.185, z: 405.31}
