@@ -75,14 +75,13 @@ Shader "Marko/RaymarchingShader"
                 float rad = 0.0174532925 * degree;
                 float cosY = cos(rad);
                 float sinY = sin(rad);
-                return float3(cosY * v.x - sinY * v.z, v.y,  sinY * v.x + cosY * v.y);
+                return float3(cosY * v.x - sinY * v.z, v.y,  sinY * v.x + cosY * v.z);
 
             }
 
 
            
-                float distanceField(float3 p) 
-            
+                float distanceField(float3 p)             
             {                
                 float groundPlane = sdPlane(p, float4(0, 1, 0,0));
                 float sphere = sdSphere(p - _sphere.xyz, _sphere.w);

@@ -155,7 +155,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _shader: {fileID: 4800000, guid: 66521a0a1b887f841b91f427da47d96c, type: 3}
-  _maxDistance: 1000
+  _maxDistance: 10000
   _maxIterations: 300
   _accuracy: 0.001
   _aoIterations: 3
@@ -168,10 +168,10 @@ MonoBehaviour:
   _shadowDistance: {x: 1, y: 100}
   _penumbra: 256
   _mainColor: {r: 0.050980393, g: 0.78039217, b: 1, a: 0}
-  _sphere: {x: 0, y: 0, z: 0, w: 8.16}
-  _numOfSpheres: 8
+  _sphere: {x: 1, y: 1, z: 1, w: 1}
+  _numOfSpheres: 16
   _sphereSmooth: 1
-  _rotation: 11.21
+  _rotation: 30
 --- !u!81 &28095407
 AudioListener:
   m_ObjectHideFlags: 0
