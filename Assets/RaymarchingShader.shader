@@ -18,19 +18,28 @@ Shader "Marko/RaymarchingShader"
 
                 #include "UnityCG.cginc"
                 #include "DistanceFunctions.cginc"
-
-
-            sampler2D _MainTex;
+             sampler2D _MainTex;
+            //Setup           
             uniform sampler2D _CameraDepthTexture;
             uniform float4x4 _CamFrustum, _CamToWorld;
             uniform int _maxIterations;
             uniform float _accuracy;
-            uniform float _maxDistance, _roundingFactor, _smoothingFactor, _intersectionSmoothing, _lightIntensity;
-            uniform float4 _sphere1, _sphere2, _box1;
-            uniform float3 _lightDirection, _modInterval , _lightColor;
-            uniform fixed4 _mainColor;            
+            uniform float _maxDistance;
+            //Color
+            uniform fixed4 _mainColor;      
+            //Light
+            uniform float3 _lightDirection,  _lightColor;
+            uniform float _lightIntensity;
+            //Shadows
             uniform float2 _shadowDistance;
             uniform float _shadowIntensity , _penumbra;
+
+            //Signed Distance Functions
+            uniform float4 _sphere;
+            uniform int _numOfSpheres;
+            uniform float _sphereSmooth;
+            uniform float _rotation;
+
 
             struct appdata
             {
@@ -61,34 +70,29 @@ Shader "Marko/RaymarchingShader"
             }
 
 
-            float BoxSphere(float3 p) {
+            float3 RotateY(float3 v, float degree) {
+            
+                float rad = 0.0174532925 * degree;
+                float cosY = cos(rad);
+                float sinY = sin(rad);
+                return float3(cosY * v.x - sinY * v.z, v.y,  sinY * v.x + cosY * v.y);
 
-                float Sphere1 = sdSphere(p - _sphere1.xyz, _sphere1.w);
-                float Box1 = sdRoundedbox(p - _box1.xyz, _box1.w, _roundingFactor);
-
-                float combination1 = opSS(Sphere1, Box1, _smoothingFactor);
-                float Sphere2 = sdSphere(p - _sphere2.xyz, _sphere2.w);
-                float combination2 = opIS(Sphere2, combination1, _intersectionSmoothing);
-
-                return combination2;
             }
+
+
+           
                 float distanceField(float3 p) 
             
             {                
                 float groundPlane = sdPlane(p, float4(0, 1, 0,0));
-                float boxSphere = BoxSphere(p);
-
-                return opU(groundPlane, boxSphere);
-
-                
-
+                float sphere = sdSphere(p - _sphere.xyz, _sphere.w);
+                for (int i = 0; i < _numOfSpheres; i++)
+                {
+                    float addSphere = sdSphere(RotateY(p, _rotation * i) - _sphere.xyz, _sphere.w);
+                    sphere = opUS(sphere, addSphere, _sphereSmooth);
+                }
+                return opU(sphere, groundPlane);
             }
-
-            
-
-
-
-
 
             float3 getNormal(float3 p)
             {

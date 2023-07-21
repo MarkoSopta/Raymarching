@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.45142895, g: 0.50084305, b: 0.5719084, a: 1}
+  m_IndirectSpecularColor: {r: 0.44240972, g: 0.48451173, b: 0.5337789, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -155,7 +155,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _shader: {fileID: 4800000, guid: 66521a0a1b887f841b91f427da47d96c, type: 3}
-  _maxDistance: 100
+  _maxDistance: 1000
   _maxIterations: 300
   _accuracy: 0.001
   _aoIterations: 3
@@ -164,16 +164,14 @@ MonoBehaviour:
   _directionalLight: {fileID: 633789778}
   _lightColor: {r: 1, g: 1, b: 0, a: 0}
   _lightIntensity: 1
-  _shadowIntensity: 2
+  _shadowIntensity: 1
   _shadowDistance: {x: 1, y: 100}
-  _penumbra: 200.1
+  _penumbra: 256
   _mainColor: {r: 0.050980393, g: 0.78039217, b: 1, a: 0}
-  _sphere1: {x: 0, y: 2.85, z: 0, w: 2.9}
-  _box1: {x: 0, y: 2.85, z: 0, w: 2.6}
-  _roundingFactor: 0.01
-  _smoothingFactor: 1.337
-  _sphere2: {x: 0, y: 2.85, z: 0, w: 3.4}
-  _intersectionSmoothing: 0.1
+  _sphere: {x: 0, y: 0, z: 0, w: 8.16}
+  _numOfSpheres: 8
+  _sphereSmooth: 1
+  _rotation: 11.21
 --- !u!81 &28095407
 AudioListener:
   m_ObjectHideFlags: 0
@@ -240,14 +238,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 28095405}
-  m_LocalRotation: {x: -0.0025011543, y: -0.6781557, z: -0.0023079985, w: 0.73491037}
-  m_LocalPosition: {x: 12.31, y: 0, z: 0}
+  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: -42, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: -0.39, y: -85.4, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!1 &633789776
 GameObject:
   m_ObjectHideFlags: 0
@@ -334,11 +332,11 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 633789776}
-  m_LocalRotation: {x: -0.40586314, y: -0.43316245, z: -0.17016257, w: -0.78656864}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0.1314105, y: -0.1306816, z: -0.12448498, w: -0.97476006}
+  m_LocalPosition: {x: 59.8, y: 16.8, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 29.41, y: 790.185, z: 405.31}
+  m_LocalEulerAnglesHint: {x: 12.924, y: 737.155, z: 376.513}

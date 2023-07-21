@@ -40,8 +40,7 @@ public class RaymarchCamera : SceneViewFilter
 
     [Header("Ambient Occlusion")]
     public int _aoIterations;
-    public float _aoStepSize, _aoIntensity;
-    
+    public float _aoStepSize, _aoIntensity;    
 
     [Header("Light")]
     public Transform _directionalLight;
@@ -55,12 +54,10 @@ public class RaymarchCamera : SceneViewFilter
     public float _penumbra;
 [Header("Signed Distance Field")]    
     public Color _mainColor;
-    public Vector4 _sphere1;
-    public Vector4 _box1;
-    public float _roundingFactor;
-    public float _smoothingFactor;
-    public Vector4 _sphere2;
-    public float _intersectionSmoothing;
+    public Vector4 _sphere;    
+    public int _numOfSpheres;
+    public float _sphereSmooth;    
+    public float _rotation;
 
 
     void OnRenderImage(RenderTexture source, RenderTexture destination) {
@@ -78,13 +75,10 @@ public class RaymarchCamera : SceneViewFilter
         _raymarchMaterial.SetFloat("_aoStepSize", _aoStepSize);
         _raymarchMaterial.SetInt("_aoIterations", _aoIterations);
 
-        _raymarchMaterial.SetVector("_sphere1", _sphere1);        
-        _raymarchMaterial.SetVector("_sphere2", _sphere2);
-        _raymarchMaterial.SetVector("_box1", _box1);
-
-        _raymarchMaterial.SetFloat("_roundingFactor", _roundingFactor);
-        _raymarchMaterial.SetFloat("_smoothingFactor", _smoothingFactor);
-        _raymarchMaterial.SetFloat("_intersectionSmoothing", _intersectionSmoothing);
+        _raymarchMaterial.SetVector("_sphere", _sphere);
+        _raymarchMaterial.SetInt("_numOfSpheres", _numOfSpheres);
+        _raymarchMaterial.SetFloat("_sphereSmooth", _sphereSmooth);
+        _raymarchMaterial.SetFloat("_rotation", _rotation);
 
         _raymarchMaterial.SetColor("_lightColor", _lightColor);
         _raymarchMaterial.SetFloat("_lightIntensity", _lightIntensity);
