@@ -18,21 +18,31 @@ Shader "Marko/RaymarchingShader"
 
                 #include "UnityCG.cginc"
                 #include "DistanceFunctions.cginc"
-             sampler2D _MainTex;
+            sampler2D _MainTex;
+
             //Setup           
             uniform sampler2D _CameraDepthTexture;
             uniform float4x4 _CamFrustum, _CamToWorld;
             uniform int _maxIterations;
             uniform float _accuracy;
             uniform float _maxDistance;
+
             //Color
-            uniform fixed4 _mainColor;      
+            uniform fixed4 _mainColor;    
+
             //Light
             uniform float3 _lightDirection,  _lightColor;
             uniform float _lightIntensity;
+
             //Shadows
             uniform float2 _shadowDistance;
             uniform float _shadowIntensity , _penumbra;
+            //Reflections
+
+            uniform int _reflectionCount;
+            uniform float _reflectionIntensity;
+            uniform float _enviromentReflectionIntensity;
+            uniform samplerCUBE _reflectionCube;
 
             //Signed Distance Functions
             uniform float4 _sphere;
@@ -85,7 +95,7 @@ Shader "Marko/RaymarchingShader"
             {                
                 float groundPlane = sdPlane(p, float4(0, 1, 0,0));
                 float sphere = sdSphere(p - _sphere.xyz, _sphere.w);
-                for (int i = 0; i < _numOfSpheres; i++)
+                for (int i = 1; i < _numOfSpheres; i++)
                 {
                     float addSphere = sdSphere(RotateY(p, _rotation * i) - _sphere.xyz, _sphere.w);
                     sphere = opUS(sphere, addSphere, _sphereSmooth);
@@ -177,32 +187,30 @@ Shader "Marko/RaymarchingShader"
 
 
 
-            fixed4 Raymarching(float3 rayOrigin,float3 rayDistance,float depth) {
+            bool Raymarching(float3 rayOrigin,float3 rayDistance,float depth, float maxDistance, int maxIter, inout float3 p) {
 
-                fixed4 result = fixed4(1, 1, 1, 1);
-                const int maxIter = _maxIterations;
+                bool hit;
+                maxIter = _maxIterations;
                 float t = 0; //distance travelled along the ray
 
                 for (int i  = 0; i < maxIter; i++)   
                 {
                     if (t > _maxDistance || t>= depth) 
                     {                    
-                        result = fixed4(rayDistance, 0);
+                        hit = false;
                         break;
                     }
-                    float3 p = rayOrigin + rayDistance * t;
+                    p = rayOrigin + rayDistance * t;
 
                     float d = distanceField(p);
                     if (d < _accuracy) //hit
-                    { 
-                        float3 n = getNormal(p);
-                        float3 shade = Shading(p, n);
-                        result = fixed4(shade, 1);
+                    {                         
+                        hit = true;
                         break;
                     }
                     t += d;
                 }
-                return result;            
+                return hit;            
             }
             
 
@@ -215,7 +223,56 @@ Shader "Marko/RaymarchingShader"
                 fixed3 col = tex2D(_MainTex,i.uv);
                float3 rayDirection = normalize(i.ray.xyz);
                float3 rayOrigin = _WorldSpaceCameraPos;
-               fixed4 result = Raymarching(rayOrigin, rayDirection,depth);
+               fixed4 result;
+               
+               float3 hitPos;
+               bool hit = Raymarching(rayOrigin, rayDirection, depth, _maxDistance, _maxIterations, hitPos);
+               if (hit)
+               { 
+
+               float3 normal = getNormal(hitPos);
+               float3 shade = Shading(hitPos, normal);
+               result = fixed4(shade, 1);
+               result += fixed4(texCUBE(_reflectionCube, normal).rgb * _enviromentReflectionIntensity * _reflectionIntensity, 0);
+               
+               if (_reflectionCount > 0) {
+                   rayDirection = normalize(reflect(rayDirection, normal));
+                   rayOrigin = hitPos + rayDirection * .01;
+
+                   hit = Raymarching(rayOrigin, rayDirection, _maxDistance, _maxDistance *.5, _maxIterations/2, hitPos);
+                   if (hit) {
+                       float3 normal = getNormal(hitPos);
+                       float3 shade = Shading(hitPos, normal);
+                       result += fixed4(shade * _reflectionIntensity, 0);
+                     }
+                }
+               if (_reflectionCount > 1) {
+                   rayDirection = normalize(reflect(rayDirection, normal));
+                   rayOrigin = hitPos + rayDirection * .01;
+
+                   hit = Raymarching(rayOrigin, rayDirection, _maxDistance, _maxDistance * .25, _maxIterations / 4, hitPos);
+                   if (hit) {
+                       float3 normal = getNormal(hitPos);
+                       float3 shade = Shading(hitPos, normal);
+                       result += fixed4(shade * _reflectionIntensity * .5, 0);
+                        }
+                    }
+               if (_reflectionCount > 2) {
+                   rayDirection = normalize(reflect(rayDirection, normal));
+                   rayOrigin = hitPos + rayDirection * .01;
+
+                   hit = Raymarching(rayOrigin, rayDirection, _maxDistance, _maxDistance * .125, _maxIterations / 8, hitPos);
+                   if (hit) {
+                       float3 normal = getNormal(hitPos);
+                       float3 shade = Shading(hitPos, normal);
+                       result += fixed4(shade * _reflectionIntensity * .25, 0);
+                   }
+               }
+               }
+               else {
+                   result = fixed4(0,0,0,0);
+               }
+               
                return fixed4(col * (1.0 - result.w) + result.xyz * result.w, 1.0);
             }
             ENDCG

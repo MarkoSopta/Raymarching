@@ -59,12 +59,27 @@ public class RaymarchCamera : SceneViewFilter
     public float _sphereSmooth;    
     public float _rotation;
 
+    [Header("Reflections")]
+    [Range(0, 3)]
+    public int _reflectionCount;
+    [Range(0, 1)]
+    public float _reflectionIntensity;
+    [Range(0, 1)]
+    public float _enviromentReflectionIntensity;
+    public Cubemap _reflectionCube;
+
 
     void OnRenderImage(RenderTexture source, RenderTexture destination) {
         if (!_raymarchMaterial) {
             Graphics.Blit(source, destination);
             return;
         }
+
+        _raymarchMaterial.SetInt("_reflectionCount", _reflectionCount);
+        _raymarchMaterial.SetFloat("_reflectionIntensity", _reflectionIntensity);
+        _raymarchMaterial.SetFloat("_enviromentReflectionIntensity", _enviromentReflectionIntensity);
+        _raymarchMaterial.SetTexture("_reflectionCube", _reflectionCube);
+
         _raymarchMat.SetMatrix("_CamFrustum", CamFrustum(_camera));
         _raymarchMaterial.SetMatrix("_CamToWorld", _camera.cameraToWorldMatrix);
         _raymarchMaterial.SetFloat("_maxDistance", _maxDistance);
