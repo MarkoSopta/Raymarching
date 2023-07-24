@@ -14,7 +14,7 @@ Shader "Marko/RaymarchingShader"
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            #pragma target 3.0
+            #pragma target 5.0
 
                 #include "UnityCG.cginc"
                 #include "DistanceFunctions.cginc"
@@ -28,7 +28,9 @@ Shader "Marko/RaymarchingShader"
             uniform float _maxDistance;
 
             //Color
-            uniform fixed4 _mainColor;    
+            uniform fixed4 _groundColor;    
+            uniform fixed4 _sphereColor[8];
+            uniform float _colorIntensity;
 
             //Light
             uniform float3 _lightDirection,  _lightColor;
@@ -91,13 +93,13 @@ Shader "Marko/RaymarchingShader"
 
 
            
-                float distanceField(float3 p)             
+                float4 distanceField(float3 p)             
             {                
-                float groundPlane = sdPlane(p, float4(0, 1, 0,0));
-                float sphere = sdSphere(p - _sphere.xyz, _sphere.w);
+                float4 groundPlane = float4 (_groundColor.rgb, sdPlane(p, float4(0, 1, 0,0)));
+                float4 sphere = float4(_sphereColor[0].rgb, sdSphere(p - _sphere.xyz, _sphere.w));
                 for (int i = 1; i < _numOfSpheres; i++)
                 {
-                    float addSphere = sdSphere(RotateY(p, _rotation * i) - _sphere.xyz, _sphere.w);
+                    float4 addSphere = float4(_sphereColor[i].rgb, sdSphere(RotateY(p, _rotation * i) - _sphere.xyz, _sphere.w));
                     sphere = opUS(sphere, addSphere, _sphereSmooth);
                 }
                 return opU(sphere, groundPlane);
@@ -107,9 +109,9 @@ Shader "Marko/RaymarchingShader"
             {
                 const float2 offset = float2(0.001, 0.0);
                 float3 n = float3(
-                    distanceField(p + offset.xyy) - distanceField(p - offset.xyy),
-                    distanceField(p + offset.yxy) - distanceField(p - offset.yxy),
-                    distanceField(p + offset.yyx) - distanceField(p - offset.yyx));
+                    distanceField(p + offset.xyy).w - distanceField(p - offset.xyy).w,
+                    distanceField(p + offset.yxy).w - distanceField(p - offset.yxy).w,
+                    distanceField(p + offset.yyx).w - distanceField(p - offset.yyx).w);
                 return normalize(n);
             }
 
@@ -117,7 +119,7 @@ Shader "Marko/RaymarchingShader"
             {            
                 for (float t = mint; t < maxt; t++)
                 {
-                    float h = distanceField(ro + rd * t);
+                    float h = distanceField(ro + rd * t).w;
                     if (h < 0.001) {
                         return 0.0;
                     }
@@ -133,7 +135,7 @@ Shader "Marko/RaymarchingShader"
                 float result = 1.0;
                 for (float x = mint; x < maxt;)
                 {
-                    float h = distanceField(ro + rd * x);
+                    float h = distanceField(ro + rd * x).w;
                     if (h < 0.001) {
                         return 0.0;
                     }
@@ -155,7 +157,7 @@ Shader "Marko/RaymarchingShader"
                 for (int i = 1; i <= _aoIterations; i++)
                 {
                     dst = step * i;
-                    ao += max(0.0,(dst - distanceField(pos + norm + dst)) / dst);
+                    ao += max(0.0,(dst - distanceField(pos + norm + dst).w) / dst);
                 }
                 return (1.0 - ao * _aoIntensity);
             }
@@ -163,11 +165,11 @@ Shader "Marko/RaymarchingShader"
 
 
 
-            float3 Shading(float3 position, float3 normal) {
+            float3 Shading(float3 position, float3 normal, fixed3 c) {
 
                 float3 result; 
                 //Diffuse Color
-                float3 color = _mainColor.rgb;
+                float3 color = c.rgb * _colorIntensity;
                 //Directional light
                 float3 light = (_lightColor * dot(-_lightDirection, normal) * .5 + .5) * _lightIntensity;
                 //Shadows
@@ -187,7 +189,7 @@ Shader "Marko/RaymarchingShader"
 
 
 
-            bool Raymarching(float3 rayOrigin,float3 rayDistance,float depth, float maxDistance, int maxIter, inout float3 p) {
+            bool Raymarching(float3 rayOrigin,float3 rayDistance,float depth, float maxDistance, int maxIter, inout float3 p, inout fixed3 distColor) {
 
                 bool hit;
                 maxIter = _maxIterations;
@@ -202,13 +204,14 @@ Shader "Marko/RaymarchingShader"
                     }
                     p = rayOrigin + rayDistance * t;
 
-                    float d = distanceField(p);
-                    if (d < _accuracy) //hit
-                    {                         
+                    float4 d = distanceField(p);
+                    if (d.w < _accuracy) //hit
+                    {       
+                        distColor = d.rgb;
                         hit = true;
                         break;
                     }
-                    t += d;
+                    t += d.w;
                 }
                 return hit;            
             }
@@ -220,18 +223,19 @@ Shader "Marko/RaymarchingShader"
                 depth *= length(i.ray);
 
 
-                fixed3 col = tex2D(_MainTex,i.uv);
+               fixed3 col = tex2D(_MainTex,i.uv);
                float3 rayDirection = normalize(i.ray.xyz);
                float3 rayOrigin = _WorldSpaceCameraPos;
-               fixed4 result;
-               
+               fixed4 result;               
                float3 hitPos;
-               bool hit = Raymarching(rayOrigin, rayDirection, depth, _maxDistance, _maxIterations, hitPos);
+               fixed3 distColor;
+
+               bool hit = Raymarching(rayOrigin, rayDirection, depth, _maxDistance, _maxIterations, hitPos, distColor);
                if (hit)
                { 
 
                float3 normal = getNormal(hitPos);
-               float3 shade = Shading(hitPos, normal);
+               float3 shade = Shading(hitPos, normal, distColor);
                result = fixed4(shade, 1);
                result += fixed4(texCUBE(_reflectionCube, normal).rgb * _enviromentReflectionIntensity * _reflectionIntensity, 0);
                
@@ -239,10 +243,10 @@ Shader "Marko/RaymarchingShader"
                    rayDirection = normalize(reflect(rayDirection, normal));
                    rayOrigin = hitPos + rayDirection * .01;
 
-                   hit = Raymarching(rayOrigin, rayDirection, _maxDistance, _maxDistance *.5, _maxIterations/2, hitPos);
+                   hit = Raymarching(rayOrigin, rayDirection, _maxDistance, _maxDistance * .5, _maxIterations / 2, hitPos, distColor);
                    if (hit) {
                        float3 normal = getNormal(hitPos);
-                       float3 shade = Shading(hitPos, normal);
+                       float3 shade = Shading(hitPos, normal, distColor);
                        result += fixed4(shade * _reflectionIntensity, 0);
                      }
                 }
@@ -250,10 +254,10 @@ Shader "Marko/RaymarchingShader"
                    rayDirection = normalize(reflect(rayDirection, normal));
                    rayOrigin = hitPos + rayDirection * .01;
 
-                   hit = Raymarching(rayOrigin, rayDirection, _maxDistance, _maxDistance * .25, _maxIterations / 4, hitPos);
+                   hit = Raymarching(rayOrigin, rayDirection, _maxDistance, _maxDistance * .25, _maxIterations / 4, hitPos , distColor);
                    if (hit) {
                        float3 normal = getNormal(hitPos);
-                       float3 shade = Shading(hitPos, normal);
+                       float3 shade = Shading(hitPos, normal, distColor);
                        result += fixed4(shade * _reflectionIntensity * .5, 0);
                         }
                     }
@@ -261,10 +265,10 @@ Shader "Marko/RaymarchingShader"
                    rayDirection = normalize(reflect(rayDirection, normal));
                    rayOrigin = hitPos + rayDirection * .01;
 
-                   hit = Raymarching(rayOrigin, rayDirection, _maxDistance, _maxDistance * .125, _maxIterations / 8, hitPos);
+                   hit = Raymarching(rayOrigin, rayDirection, _maxDistance, _maxDistance * .125, _maxIterations / 8, hitPos, distColor);
                    if (hit) {
                        float3 normal = getNormal(hitPos);
-                       float3 shade = Shading(hitPos, normal);
+                       float3 shade = Shading(hitPos, normal, distColor);
                        result += fixed4(shade * _reflectionIntensity * .25, 0);
                    }
                }

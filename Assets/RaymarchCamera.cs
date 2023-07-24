@@ -53,7 +53,7 @@ public class RaymarchCamera : SceneViewFilter
     [Range(1, 256)]
     public float _penumbra;
 [Header("Signed Distance Field")]    
-    public Color _mainColor;
+    
     public Vector4 _sphere;    
     public int _numOfSpheres;
     public float _sphereSmooth;    
@@ -68,12 +68,30 @@ public class RaymarchCamera : SceneViewFilter
     public float _enviromentReflectionIntensity;
     public Cubemap _reflectionCube;
 
+    [Header("Color")]
+    public Color _groundColor;
+
+    public Gradient _sphereGradient;
+    private Color[] _sphereColor= new Color[8];
+    [Range(0,4)]
+    public float _colorIntensity;
+
+
 
     void OnRenderImage(RenderTexture source, RenderTexture destination) {
         if (!_raymarchMaterial) {
             Graphics.Blit(source, destination);
             return;
         }
+
+        for (int i = 0; i < 8; i++)
+        {
+            _sphereColor[i] = _sphereGradient.Evaluate((1f / 8) * i);
+        }
+
+        _raymarchMaterial.SetColor("_groundColor", _groundColor);
+        _raymarchMaterial.SetColorArray("_sphereColor", _sphereColor);
+        _raymarchMaterial.SetFloat("_colorIntensity", _colorIntensity);
 
         _raymarchMaterial.SetInt("_reflectionCount", _reflectionCount);
         _raymarchMaterial.SetFloat("_reflectionIntensity", _reflectionIntensity);
@@ -103,7 +121,7 @@ public class RaymarchCamera : SceneViewFilter
         _raymarchMaterial.SetFloat("_penumbra", _penumbra);
 
         _raymarchMaterial.SetVector("_lightDirection", _directionalLight ? _directionalLight.forward : Vector3.down);
-        _raymarchMaterial.SetColor("_mainColor", _mainColor);
+        
         RenderTexture.active = destination;
         _raymarchMaterial.SetTexture("_MainTex", source);
         GL.PushMatrix();

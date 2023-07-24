@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.45138443, g: 0.50091326, b: 0.5725134, a: 1}
+  m_IndirectSpecularColor: {r: 0.4455092, g: 0.49518454, b: 0.5740985, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -155,27 +155,58 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _shader: {fileID: 4800000, guid: 66521a0a1b887f841b91f427da47d96c, type: 3}
-  _maxDistance: 10000
+  _maxDistance: 100
   _maxIterations: 300
   _accuracy: 0.001
   _aoIterations: 1
-  _aoStepSize: 0.1
-  _aoIntensity: 0.3
+  _aoStepSize: 0.07
+  _aoIntensity: 0.1
   _directionalLight: {fileID: 633789778}
   _lightColor: {r: 1, g: 1, b: 1, a: 0}
   _lightIntensity: 1
   _shadowIntensity: 1
   _shadowDistance: {x: 1, y: 100}
-  _penumbra: 256
-  _mainColor: {r: 0, g: 0.5588388, b: 0.6792453, a: 0}
-  _sphere: {x: 0, y: 1, z: 4.63, w: 1}
-  _numOfSpheres: 9
-  _sphereSmooth: 1.01
-  _rotation: 40
-  _reflectionCount: 1
-  _reflectionIntensity: 0.4
+  _penumbra: 128
+  _sphere: {x: 0, y: 0.48, z: 1.64, w: 0.49}
+  _numOfSpheres: 8
+  _sphereSmooth: 0
+  _rotation: 45
+  _reflectionCount: 3
+  _reflectionIntensity: 0.5
   _enviromentReflectionIntensity: 0.9
   _reflectionCube: {fileID: 8900000, guid: e48bf6301e0ee114283e75ee0db89e2b, type: 3}
+  _groundColor: {r: 0.0047169924, g: 0.7997187, b: 1, a: 0}
+  _sphereGradient:
+    serializedVersion: 2
+    key0: {r: 0, g: 0.5754717, b: 0.055761963, a: 1}
+    key1: {r: 1, g: 1, b: 1, a: 1}
+    key2: {r: 0, g: 0, b: 0, a: 0}
+    key3: {r: 0, g: 0, b: 0, a: 0}
+    key4: {r: 0, g: 0, b: 0, a: 0}
+    key5: {r: 0, g: 0, b: 0, a: 0}
+    key6: {r: 0, g: 0, b: 0, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
+    ctime0: 16384
+    ctime1: 65535
+    ctime2: 0
+    ctime3: 0
+    ctime4: 0
+    ctime5: 0
+    ctime6: 0
+    ctime7: 0
+    atime0: 0
+    atime1: 65535
+    atime2: 0
+    atime3: 0
+    atime4: 0
+    atime5: 0
+    atime6: 0
+    atime7: 0
+    m_Mode: 1
+    m_ColorSpace: -1
+    m_NumColorKeys: 2
+    m_NumAlphaKeys: 2
+  _colorIntensity: 0.68
 --- !u!81 &28095407
 AudioListener:
   m_ObjectHideFlags: 0
@@ -242,14 +273,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 28095405}
-  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: -42, y: 0, z: 0}
+  m_LocalRotation: {x: 0.07472132, y: 0.70132506, z: -0.07433109, w: 0.70500696}
+  m_LocalPosition: {x: -8, y: 2.77, z: -0.45}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+  m_LocalEulerAnglesHint: {x: 12.1, y: 89.7, z: 0}
 --- !u!1 &633789776
 GameObject:
   m_ObjectHideFlags: 0
@@ -336,11 +367,11 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 633789776}
-  m_LocalRotation: {x: -0.30861324, y: -0.16928236, z: -0.18319814, w: -0.91789967}
-  m_LocalPosition: {x: 59.8, y: 16.8, z: 0}
+  m_LocalRotation: {x: -0.33646053, y: 0.42527246, z: -0.828489, w: -0.13979864}
+  m_LocalPosition: {x: 36.2, y: 16.8, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 30.3, y: 749.4, z: 390.7}
+  m_LocalEulerAnglesHint: {x: 53.01, y: 46.8, z: 545.2}
